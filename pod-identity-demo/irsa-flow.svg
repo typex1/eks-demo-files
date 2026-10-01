@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2d3b45"/>
+    </marker>
+    <marker id="arrowBack" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a7f5a"/>
+    </marker>
+    <style>
+      .title   { font-size: 30px; font-weight: 700; fill: #16222b; }
+      .subtitle{ font-size: 16px; fill: #5a6b76; }
+      .boxlbl  { font-size: 17px; font-weight: 700; fill: #16222b; }
+      .boxsub  { font-size: 13px; fill: #52636d; }
+      .step    { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .steptxt { font-size: 13.5px; fill: #243139; }
+      .zonelbl { font-size: 14px; font-weight: 700; fill: #7a5a00; letter-spacing: 1px; }
+      .awszone { font-size: 14px; font-weight: 700; fill: #146eb4; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1400" height="860" fill="#f7f9fa"/>
+
+  <!-- Title -->
+  <text x="40" y="52" class="title">IAM Roles for Service Accounts (IRSA) &#8212; Credential Flow</text>
+  <text x="40" y="78" class="subtitle">Requires a cluster OIDC provider &#183; role ARN via ServiceAccount annotation &#183; per-cluster trust policy &#183; STS AssumeRoleWithWebIdentity</text>
+
+  <!-- ===================== ZONES ===================== -->
+  <!-- EKS Cluster / EC2 Node zone -->
+  <rect x="40" y="110" width="620" height="620" rx="14" fill="#fffaf0" stroke="#e3b84a" stroke-width="2"/>
+  <text x="60" y="138" class="zonelbl">EKS CLUSTER &#8212; EC2 WORKER NODE</text>
+
+  <!-- AWS control plane / IAM zone -->
+  <rect x="740" y="110" width="620" height="620" rx="14" fill="#eef6fc" stroke="#146eb4" stroke-width="2"/>
+  <text x="760" y="138" class="awszone">AWS &#8212; IAM OIDC PROVIDER &amp; STS</text>
+
+  <!-- ===================== BOXES ===================== -->
+  <!-- Pod -->
+  <rect x="80" y="170" width="300" height="130" rx="10" fill="#ffffff" stroke="#2d7d46" stroke-width="2"/>
+  <text x="100" y="200" class="boxlbl">Application Pod</text>
+  <text x="100" y="224" class="boxsub">ServiceAccount: demo-sa</text>
+  <text x="100" y="246" class="boxsub">annotation: eks.amazonaws.com/role-arn</text>
+  <text x="100" y="268" class="boxsub">AWS SDK / CLI (no static keys)</text>
+  <text x="100" y="288" class="boxsub">+ projected OIDC (web identity) token</text>
+
+  <!-- ServiceAccount token (webhook injected) -->
+  <rect x="80" y="420" width="300" height="110" rx="10" fill="#ffffff" stroke="#2d7d46" stroke-width="2"/>
+  <text x="100" y="450" class="boxlbl">Projected Token &amp; Env</text>
+  <text x="100" y="474" class="boxsub">Pod Identity Webhook injects:</text>
+  <text x="100" y="496" class="boxsub">AWS_WEB_IDENTITY_TOKEN_FILE</text>
+  <text x="100" y="518" class="boxsub">AWS_ROLE_ARN</text>
+
+  <!-- IAM OIDC Provider -->
+  <rect x="780" y="170" width="300" height="130" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="800" y="200" class="boxlbl">IAM OIDC Provider</text>
+  <text x="800" y="224" class="boxsub">Created per cluster</text>
+  <text x="800" y="246" class="boxsub">(subject to IAM quota limits)</text>
+  <text x="800" y="268" class="boxsub">Validates the web identity token</text>
+  <text x="800" y="290" class="boxsub">against the cluster OIDC issuer</text>
+
+  <!-- IAM Role / STS -->
+  <rect x="780" y="420" width="300" height="150" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="800" y="450" class="boxlbl">IAM Role + STS</text>
+  <text x="800" y="474" class="boxsub">Trust: cluster OIDC provider ARN</text>
+  <text x="800" y="496" class="boxsub">+ matched sub (namespace:SA)</text>
+  <text x="800" y="518" class="boxsub">sts:AssumeRoleWithWebIdentity</text>
+  <text x="800" y="538" class="boxsub">Session tags: limited / manual</text>
+  <text x="800" y="556" class="boxsub">Trust policy is per-cluster (not reusable)</text>
+
+  <!-- AWS Service -->
+  <rect x="1120" y="170" width="210" height="130" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="1140" y="200" class="boxlbl">AWS Service</text>
+  <text x="1140" y="224" class="boxsub">e.g. Amazon S3</text>
+  <text x="1140" y="246" class="boxsub">Called with temporary</text>
+  <text x="1140" y="268" class="boxsub">role credentials</text>
+
+  <!-- ===================== FLOW ARROWS ===================== -->
+
+  <!-- Step 1: Webhook injects token/env into Pod -->
+  <line x1="200" y1="420" x2="200" y2="300" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="170" cy="360" r="12" fill="#2d7d46"/>
+  <text x="170" y="365" text-anchor="middle" class="step">1</text>
+  <text x="40" y="352" class="steptxt">Webhook mounts</text>
+  <text x="40" y="370" class="steptxt">OIDC token + env</text>
+
+  <!-- Step 2: Pod/SDK -> STS directly with web identity token -->
+  <line x1="380" y1="235" x2="780" y2="235" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="560" cy="235" r="12" fill="#2d7d46"/>
+  <text x="560" y="240" text-anchor="middle" class="step">2</text>
+  <text x="420" y="212" class="steptxt">SDK calls STS AssumeRoleWithWebIdentity</text>
+
+  <!-- Step 3: OIDC Provider validates -> IAM/STS -->
+  <line x1="930" y1="300" x2="930" y2="420" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="945" cy="360" r="12" fill="#146eb4"/>
+  <text x="945" y="365" text-anchor="middle" class="step">3</text>
+  <text x="968" y="352" class="steptxt">Token verified &#8594; STS</text>
+  <text x="968" y="370" class="steptxt">assumes the IAM role</text>
+
+  <!-- Step 4: STS -> Pod (temp creds back) -->
+  <path d="M 820 500 C 560 650, 420 650, 300 300" fill="none" stroke="#1a7f5a" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#arrowBack)"/>
+  <circle cx="520" cy="628" r="12" fill="#1a7f5a"/>
+  <text x="520" y="633" text-anchor="middle" class="step">4</text>
+  <text x="400" y="672" class="steptxt" fill="#1a7f5a">Temporary credentials returned to the pod</text>
+
+  <!-- Step 6: Pod -> AWS Service -->
+  <path d="M 380 210 C 560 150, 980 150, 1120 210" fill="none" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="750" cy="146" r="12" fill="#146eb4"/>
+  <text x="750" y="151" text-anchor="middle" class="step">5</text>
+  <text x="640" y="138" class="steptxt">Pod calls AWS service with temporary credentials</text>
+
+  <!-- Footer note -->
+  <text x="40" y="770" class="boxsub">IRSA needs an IAM OIDC provider per cluster, and the role's trust policy hardcodes that cluster's OIDC ARN &#8212; so roles are not easily reusable across clusters.</text>
+  <text x="40" y="792" class="boxsub">The ServiceAccount annotation (eks.amazonaws.com/role-arn) is the mapping mechanism. EKS Pod Identity removes the OIDC provider and the annotation entirely.</text>
+</svg>

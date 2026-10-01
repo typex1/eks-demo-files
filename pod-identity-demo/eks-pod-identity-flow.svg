@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2d3b45"/>
+    </marker>
+    <marker id="arrowBack" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a7f5a"/>
+    </marker>
+    <style>
+      .title   { font-size: 30px; font-weight: 700; fill: #16222b; }
+      .subtitle{ font-size: 16px; fill: #5a6b76; }
+      .boxlbl  { font-size: 17px; font-weight: 700; fill: #16222b; }
+      .boxsub  { font-size: 13px; fill: #52636d; }
+      .step    { font-size: 13px; font-weight: 700; fill: #ffffff; }
+      .steptxt { font-size: 13.5px; fill: #243139; }
+      .zonelbl { font-size: 14px; font-weight: 700; fill: #7a5a00; letter-spacing: 1px; }
+      .awszone { font-size: 14px; font-weight: 700; fill: #146eb4; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="1400" height="860" fill="#f7f9fa"/>
+
+  <!-- Title -->
+  <text x="40" y="52" class="title">Amazon EKS Pod Identity &#8212; Credential Flow</text>
+  <text x="40" y="78" class="subtitle">No OIDC provider &#183; no IRSA annotation &#183; reusable trust policy (pods.eks.amazonaws.com) &#183; automatic session tags</text>
+
+  <!-- ===================== ZONES ===================== -->
+  <!-- EKS Cluster / EC2 Node zone -->
+  <rect x="40" y="110" width="620" height="620" rx="14" fill="#fffaf0" stroke="#e3b84a" stroke-width="2"/>
+  <text x="60" y="138" class="zonelbl">EKS CLUSTER &#8212; EC2 WORKER NODE</text>
+
+  <!-- AWS control plane / IAM zone -->
+  <rect x="740" y="110" width="620" height="620" rx="14" fill="#eef6fc" stroke="#146eb4" stroke-width="2"/>
+  <text x="760" y="138" class="awszone">AWS &#8212; EKS AUTH API &amp; IAM / STS</text>
+
+  <!-- ===================== BOXES ===================== -->
+  <!-- Pod -->
+  <rect x="80" y="170" width="300" height="130" rx="10" fill="#ffffff" stroke="#2d7d46" stroke-width="2"/>
+  <text x="100" y="200" class="boxlbl">Application Pod</text>
+  <text x="100" y="224" class="boxsub">ServiceAccount: demo-sa</text>
+  <text x="100" y="246" class="boxsub">AWS SDK / CLI (no static keys)</text>
+  <text x="100" y="268" class="boxsub">env: AWS_CONTAINER_CREDENTIALS_FULL_URI</text>
+  <text x="100" y="288" class="boxsub">+ projected ServiceAccount token</text>
+
+  <!-- Pod Identity Agent -->
+  <rect x="80" y="420" width="300" height="110" rx="10" fill="#ffffff" stroke="#2d7d46" stroke-width="2"/>
+  <text x="100" y="450" class="boxlbl">eks-pod-identity-agent</text>
+  <text x="100" y="474" class="boxsub">DaemonSet on each EC2 node</text>
+  <text x="100" y="496" class="boxsub">Local credential endpoint</text>
+  <text x="100" y="518" class="boxsub">(169.254.170.23)</text>
+
+  <!-- EKS Auth API -->
+  <rect x="780" y="170" width="300" height="130" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="800" y="200" class="boxlbl">EKS Auth API</text>
+  <text x="800" y="224" class="boxsub">Validates the Pod Identity</text>
+  <text x="800" y="246" class="boxsub">association:</text>
+  <text x="800" y="268" class="boxsub">cluster + namespace + SA &#8594; role</text>
+  <text x="800" y="290" class="boxsub">(created via EKS API, not annotation)</text>
+
+  <!-- IAM Role / STS -->
+  <rect x="780" y="420" width="300" height="150" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="800" y="450" class="boxlbl">IAM Role + STS</text>
+  <text x="800" y="474" class="boxsub">Trust: pods.eks.amazonaws.com</text>
+  <text x="800" y="496" class="boxsub">sts:AssumeRole + sts:TagSession</text>
+  <text x="800" y="518" class="boxsub">Auto session tags:</text>
+  <text x="800" y="538" class="boxsub">eks-cluster-name, kubernetes-namespace,</text>
+  <text x="800" y="556" class="boxsub">kubernetes-service-account</text>
+
+  <!-- AWS Service -->
+  <rect x="1120" y="170" width="210" height="130" rx="10" fill="#ffffff" stroke="#146eb4" stroke-width="2"/>
+  <text x="1140" y="200" class="boxlbl">AWS Service</text>
+  <text x="1140" y="224" class="boxsub">e.g. Amazon S3</text>
+  <text x="1140" y="246" class="boxsub">Called with temporary</text>
+  <text x="1140" y="268" class="boxsub">role credentials</text>
+
+  <!-- ===================== FLOW ARROWS ===================== -->
+
+  <!-- Step 1: Pod -> Agent (request creds) -->
+  <line x1="230" y1="300" x2="230" y2="420" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="245" cy="360" r="12" fill="#2d7d46"/>
+  <text x="245" y="365" text-anchor="middle" class="step">1</text>
+  <text x="268" y="352" class="steptxt">SDK requests credentials</text>
+  <text x="268" y="370" class="steptxt">from local agent endpoint</text>
+
+  <!-- Step 2: Agent -> EKS Auth -->
+  <line x1="380" y1="455" x2="780" y2="250" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="560" cy="360" r="12" fill="#2d7d46"/>
+  <text x="560" y="365" text-anchor="middle" class="step">2</text>
+  <text x="430" y="408" class="steptxt">Agent presents the pod's token to EKS Auth</text>
+
+  <!-- Step 3: EKS Auth -> IAM/STS -->
+  <line x1="930" y1="300" x2="930" y2="420" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="945" cy="360" r="12" fill="#146eb4"/>
+  <text x="945" y="365" text-anchor="middle" class="step">3</text>
+  <text x="968" y="352" class="steptxt">Validated association &#8594;</text>
+  <text x="968" y="370" class="steptxt">AssumeRole + TagSession</text>
+
+  <!-- Step 4: STS -> Agent (temp creds back) -->
+  <path d="M 820 500 C 560 620, 420 620, 300 530" fill="none" stroke="#1a7f5a" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#arrowBack)"/>
+  <circle cx="560" cy="600" r="12" fill="#1a7f5a"/>
+  <text x="560" y="605" text-anchor="middle" class="step">4</text>
+  <text x="430" y="648" class="steptxt" fill="#1a7f5a">Temporary credentials returned to the agent</text>
+
+  <!-- Step 5: Agent -> Pod (inject creds) -->
+  <line x1="200" y1="420" x2="200" y2="300" stroke="#1a7f5a" stroke-width="2.5" stroke-dasharray="7,5" marker-end="url(#arrowBack)"/>
+  <circle cx="170" cy="360" r="12" fill="#1a7f5a"/>
+  <text x="170" y="365" text-anchor="middle" class="step">5</text>
+  <text x="40" y="352" class="steptxt" fill="#1a7f5a">Agent hands</text>
+  <text x="40" y="370" class="steptxt" fill="#1a7f5a">creds to pod</text>
+
+  <!-- Step 6: Pod -> AWS Service -->
+  <path d="M 380 210 C 560 150, 980 150, 1120 210" fill="none" stroke="#2d3b45" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="750" cy="146" r="12" fill="#146eb4"/>
+  <text x="750" y="151" text-anchor="middle" class="step">6</text>
+  <text x="640" y="138" class="steptxt">Pod calls AWS service with temporary credentials</text>
+
+  <!-- Footer note -->
+  <text x="40" y="770" class="boxsub">Contrast with IRSA: that flow needs a cluster OIDC provider and STS AssumeRoleWithWebIdentity, with the role ARN set via a ServiceAccount annotation.</text>
+  <text x="40" y="792" class="boxsub">Here, there is no OIDC provider and no annotation &#8212; the mapping lives in the EKS Pod Identity association, and the IAM trust policy is reusable across clusters.</text>
+</svg>

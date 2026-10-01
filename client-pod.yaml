@@ -1,0 +1,15 @@
+# A client pod in a DIFFERENT namespace (default), used to test
+# cross-namespace network reachability to the serverless-nginx pod.
+# It runs on a regular (non-Fargate) worker node.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netcheck-client
+  namespace: default
+  labels:
+    app: netcheck-client
+spec:
+  containers:
+  - name: netshoot
+    image: nicolaka/netshoot:latest
+    command: ["sleep", "3600"]

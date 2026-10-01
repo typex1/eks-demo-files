@@ -1,0 +1,53 @@
+# 02-k8s-resources.yaml
+#
+# Kubernetes resources for the EKS Pod Identity demo.
+#
+# IMPORTANT: Notice what is NOT here.
+#   - The ServiceAccount has NO `eks.amazonaws.com/role-arn` annotation.
+#     That annotation is the IRSA mechanism. With EKS Pod Identity, the
+#     ServiceAccount -> IAM role mapping lives at the EKS API level
+#     (created by 01-setup.sh via `aws eks create-pod-identity-association`),
+#     so the ServiceAccount here is intentionally plain.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pod-identity-demo
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: demo-sa
+  namespace: pod-identity-demo
+  # No annotations needed. (Contrast with IRSA, which would require:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::<acct>:role/<role>)
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-caller
+  namespace: pod-identity-demo
+  labels:
+    app: pod-identity-demo
+spec:
+  serviceAccountName: demo-sa
+  # Pod Identity needs the agent DaemonSet, which runs on EC2 nodes (not Fargate).
+  containers:
+    - name: aws-cli
+      image: public.ecr.aws/aws-cli/aws-cli:latest
+      # Keep the pod alive so students can exec into it and run AWS commands.
+      command: ["/bin/sh", "-c", "sleep 3600"]
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "64Mi"
+        limits:
+          cpu: "250m"
+          memory: "128Mi"
+      securityContext:
+        allowPrivilegeEscalation: false
+        runAsNonRoot: true
+        runAsUser: 1000
+        capabilities:
+          drop: ["ALL"]
+  restartPolicy: Never

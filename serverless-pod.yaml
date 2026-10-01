@@ -1,0 +1,24 @@
+# Namespace matched by the EKS Fargate profile "Serverless-Profile".
+# Any pod created here is scheduled onto a Fargate node.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: serverless
+  labels:
+    name: serverless
+---
+# An nginx pod that will run on Fargate (because it is in the
+# "serverless" namespace matched by the Fargate profile selector).
+apiVersion: v1
+kind: Pod
+metadata:
+  name: serverless-nginx
+  namespace: serverless
+  labels:
+    app: serverless-nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+    ports:
+    - containerPort: 80

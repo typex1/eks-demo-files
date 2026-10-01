@@ -1,0 +1,25 @@
+# A Deployment manages a ReplicaSet for you and adds rollout features:
+# rolling updates, rollbacks, and scaling. This is the most common way
+# to run a stateless application. It keeps `replicas` pods running and
+# recreates them if they fail.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo-deployment
+  labels:
+    app: demo-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: demo-deployment
+  template:
+    metadata:
+      labels:
+        app: demo-deployment
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.27
+        ports:
+        - containerPort: 80

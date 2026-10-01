@@ -1,0 +1,17 @@
+# A Pod is the smallest deployable unit in Kubernetes.
+# It wraps one (or more) containers that share network and storage.
+# Pods created directly are NOT self-healing: if the node dies or the
+# pod is deleted, nothing recreates it. Use a controller (Deployment,
+# ReplicaSet, Job) for that.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: demo-pod
+  labels:
+    app: demo-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.27
+    ports:
+    - containerPort: 80
